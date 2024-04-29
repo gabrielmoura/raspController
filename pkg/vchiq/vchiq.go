@@ -4,7 +4,7 @@ package vchiq
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -13,12 +13,12 @@ import (
 
 // Constants for vcgencmd get_throttled result
 const (
-	UnderVoltage         = 1 << iota // 1
-	FreqCap                          // 2
-	Throttling                       // 4
-	UnderVoltageOccurred             // 65536
-	FreqCapOccurred                  // 131072
-	Throttled                        // 262144
+	UnderVoltage        int64 = 1
+	FreqCap                   = 1 << 1
+	Throttling                = 1 << 2
+	UnderVoltageOccured       = 1 << 16
+	FreqCapOccured            = 1 << 17
+	Throttled                 = 1 << 18
 )
 
 // GetThrottled returns the throttled status as an integer.
@@ -67,13 +67,13 @@ func GetMem() (string, string, error) {
 
 // GetCPUTemp returns the CPU temperature as a string.
 func GetCPUTemp() (string, error) {
-	temp, err := ioutil.ReadFile("/sys/class/thermal/thermal_zone0/temp")
+	temp, err := os.ReadFile("/sys/class/thermal/thermal_zone0/temp")
 	if err != nil {
-		return "", errors.New("Permission Denied")
+		return "", errors.New("permission Denied")
 	}
 	cpuTemp, err := strconv.ParseInt(strings.TrimSpace(string(temp[:5])), 10, 64)
 	if err != nil {
-		return "", errors.New("Error converting to int")
+		return "", errors.New("error converting to int")
 	}
 	cpuTempC := float64(cpuTemp) / 1000.0
 	return strconv.FormatFloat(cpuTempC, 'f', 2, 64) + "C", nil
@@ -173,4 +173,49 @@ func GetHostname() (string, error) {
 	}
 
 	return clean(string(hostFile)), nil
+}
+
+// GetCPURevision retorna o código de revisão da CPU.
+func GetCPURevision() (string, error) {
+	// Lê o conteúdo do arquivo cpuinfo
+	cpuInfo, err := os.ReadFile("/proc/cpuinfo")
+	if err != nil {
+		return "", err
+	}
+
+	// Converte os dados do cpuinfo para uma string
+	cpuInfoStr := string(cpuInfo)
+
+	// Procura o campo de revisão
+	lines := strings.Split(cpuInfoStr, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "Revision") {
+			parts := strings.Split(line, ":")
+			if len(parts) == 2 {
+				revision := strings.TrimSpace(parts[1])
+				return revision, nil
+			}
+		}
+	}
+
+	return "", errors.New("couldn't find CPU revision in /proc/cpuinfo")
+}
+
+// GetDeviceName retorna o nome do dispositivo com base no código de revisão da CPU.
+func GetDeviceName() (string, error) {
+	revision, err := GetCPURevision()
+	if err != nil {
+		return "", err
+	}
+
+	switch revision {
+	case "a02082":
+		return "Raspberry Pi 3 Model B", nil
+	case "a020d3":
+		return "Raspberry Pi 3 Model B+", nil
+	case "a03111", "b03111", "b03112", "c03111", "c03112":
+		return "Raspberry Pi 4", nil
+	default:
+		return "", errors.New("device not recognized")
+	}
 }

@@ -17,6 +17,12 @@ func getInfo(c *fiber.Ctx) error {
 	} else {
 		info["hostname"] = hostname
 	}
+	if name, err := vchiq.GetDeviceName(); err == nil {
+		info["device_info"] = name
+	}
+	if name, err := vchiq.GetCPURevision(); err == nil {
+		info["cpu_revision"] = name
+	}
 
 	if vchiq.IsVcgencmdInstalled() {
 		if volt, err := vchiq.GetCoreVolt(); err != nil {
@@ -43,6 +49,12 @@ func getInfo(c *fiber.Ctx) error {
 			info["arm_mem"] = arm
 			info["gpu_mem"] = gpu
 		}
+	}
+
+	if temp, err := vchiq.GetCPUTemp(); err != nil {
+		log.Println("Error getting CPU temperature:", err)
+	} else {
+		info["cpu_temp"] = temp
 	}
 
 	if boot, root, home, err := vchiq.GetDiskUsage(); err != nil {
