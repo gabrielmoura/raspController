@@ -2,23 +2,25 @@
 
 Control your Raspberry Pi with a web interface.
 
-## Tecnologias Utilizadas
+## Technologies Used
 
 - [RoseDB](https://github.com/rosedblabs/rosedb)
 - [go-gpiocdev](https://github.com/warthog618/go-gpiocdev)
 - [mdns](https://github.com/hashicorp/mdns)
 - [Fiber](https://gofiber.io/)
 
-## Obersevações
+## Observations
 
-- O projeto foi desenvolvido para ser executado em um Raspberry Pi.
-- O projeto usa RoseDB para armazenar os dados para hitórico e gráficos.
-- As configurações devem ser especificadas no arquivo `config.json`.
-- O projeto usa mDns para descoberta de serviços.
+- This project is developed to run on a Raspberry Pi.
+- RoseDB is used to store data for history, charts, and manage pins.
+- Configuration should be specified in the `conf.yml` file.
+- mDns is used for service discovery.
+- Some functionalities require [vcgencmd](https://github.com/raspberrypi/utils).
+- Tested on Arch Linux ARM but should work on other distributions.
 
-## Configurações
+## Configurations
 
-```yml
+```yaml
 JWT_SECRET: "secretkey"
 DB_DIR: "./db"
 PORT: 8080
@@ -26,33 +28,43 @@ JWT_EXPIRES_IN: 3600
 SHARE_DIR: "/home/rasp/public"
 ```
 
-## Rotas
+## Routes
 
-Todas as rotas começam com /api
+All routes begin with /api
 
-### Informações
+### Information
 
-```http request
-GET /info
+#### List all informations
+```http
+GET /api/info
+```
+#### List all process
+```http
+GET /api/info/ps
 ```
 
 ### GPIO
 
-#### Listar todos os GPIOs
+#### List all GPIOs
 
-```http request
-GET /gpio
+```http
+GET /api/gpio
 ```
 
-#### Obter informações de um GPIO
+#### Get information about a GPIO
 
-```http request
-GET /gpio/:id
+```http
+GET /api/gpio/:id
 ```
 
-#### Atualizar um GPIO
+#### Update a GPIO
 
-```http request
-PATCH /gpio/:id
+```http
+PATCH /api/gpio/:id
+Content-Type: application/json
 
+{
+    "direction": "out",
+    "value": 1
+}
 ```
