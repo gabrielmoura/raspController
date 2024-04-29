@@ -2,6 +2,7 @@
 package db
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
@@ -13,16 +14,18 @@ import (
 var DB *rosedb.DB
 
 // Initialize inicializa o banco de dados.
-func Initialize() error {
+func Initialize(ctx context.Context) error {
 	options := rosedb.DefaultOptions
 	options.DirPath = configs.Conf.DBDir
 	db, err := rosedb.Open(options)
 	if err != nil {
 		return err
 	}
-	defer func() {
+
+	if ctx.Err() != nil {
 		_ = db.Close()
-	}()
+		return ctx.Err()
+	}
 	DB = db
 
 	return nil

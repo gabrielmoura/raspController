@@ -25,6 +25,15 @@ func InitializeRoutes(Fiber *fiber.App) {
 	})
 	api := Fiber.Group("/api")
 
+	api.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"/info":    "Retorna informações do sistema.",
+			"/info/ps": "Retorna informações de processos.",
+			"/gpio":    "Retorna o status de todos os pinos GPIO Configurados.",
+			"/share":   "Retorna uma lista de arquivos contidos no diretório de compartilhamento.",
+		})
+	})
+
 	api.Get("/info", getInfo)
 	api.Get("/info/ps", getInfoProcess)
 	api.Get("/gpio", getGpio)
@@ -32,7 +41,4 @@ func InitializeRoutes(Fiber *fiber.App) {
 
 	api.Get("/share", getShare)
 	api.Get("/share/*", getShareFile)
-
-	//auth := api.Group("/auth")
-
 }

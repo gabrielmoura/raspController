@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/gabrielmoura/raspController/configs"
+	"github.com/gabrielmoura/raspController/infra/db"
 	"github.com/gabrielmoura/raspController/infra/gpio"
 	"github.com/gabrielmoura/raspController/infra/routes"
 	"github.com/gabrielmoura/raspController/pkg/mdns"
@@ -12,6 +14,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	if err := configs.LoadConfig(); err != nil {
 		panic(err)
 	}
@@ -26,6 +30,7 @@ func main() {
 		},
 	)
 	routes.InitializeRoutes(app)
+	db.Initialize(ctx)
 
 	gpio.Initialize()
 	if err := mdns.SetDNS(configs.Conf.AppName, configs.Conf.Port); err != nil {

@@ -1,7 +1,15 @@
 # RaspController
 
-All: echo "RaspController Compiler\nUse\: make m8x64 or make m8x32"
+ALL:
+	@echo "RaspController Compiler"
+	@echo "Use: make m8x64 for >=Raspberry Pi 3+"
+	@echo "Use: make m8x32 for =<Raspberry Pi 3+"
 
-m8x64: GOOS=linux GOARCH=arm64  go build
-m8x32: GOOS=linux GOARCH=arm GOARM=7 go build
-doc: godoc -http=:6060
+m8x64:
+	GOOS=linux GOARCH=arm64 go build -o raspc_aarch64
+
+m8x32:
+	GOOS=linux GOARCH=arm GOARM=7 go build -o raspc_arm
+
+doc:
+	godoc -http=:6060

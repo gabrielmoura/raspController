@@ -3,10 +3,11 @@ package gpio
 import (
 	"encoding/json"
 	"errors"
+	"log"
+
 	"github.com/gabrielmoura/raspController/configs"
 	"github.com/gabrielmoura/raspController/infra/db"
 	"github.com/warthog618/go-gpiocdev"
-	"log"
 )
 
 var Chip *gpiocdev.Chip
@@ -68,7 +69,10 @@ func GetAll() (map[int]int, error) {
 	if !CheckChip() {
 		return nil, errors.New("GPIO chip not initialized")
 	}
-	list, _ := db.Get("gpio_list")
+	list, err := db.Get("gpio_list")
+	if err != nil {
+		return nil, err
+	}
 	var gpioList map[int]int
 	_ = json.Unmarshal([]byte(list), &gpioList)
 	return gpioList, nil
