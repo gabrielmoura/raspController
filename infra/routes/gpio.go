@@ -6,7 +6,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// getGpio returns all GPIOs status
+// getGpio godoc
+// @description Retorna o status de todos os pinos GPIO.
+// @tags gpio
+// @url /api/gpio
 func getGpio(c *fiber.Ctx) error {
 	if !gpio.CheckChip() {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -23,7 +26,10 @@ func getGpio(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(list)
 }
 
-// updateGpio updates a GPIO status
+// updateGpio godoc
+// @description Atualiza o status de um pino GPIO.
+// @tags gpio
+// @url /api/gpio/{pin}
 func updateGpio(c *fiber.Ctx) error {
 	// Verifique se o chip GPIO está inicializado.
 	if !gpio.CheckChip() {

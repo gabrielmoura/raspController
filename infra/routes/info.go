@@ -8,7 +8,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// getInfo returns system information.
+// getInfo godoc
+// @description Retorna informações do sistema.
+// @tags info
+// @url /api/info
 func getInfo(c *fiber.Ctx) error {
 	info := make(fiber.Map)
 	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
@@ -22,6 +25,18 @@ func getInfo(c *fiber.Ctx) error {
 	}
 	if name, err := vchiq.GetCPURevision(); err == nil {
 		info["cpu_revision"] = name
+	}
+	if uptime, err := vchiq.GetUptime(); err == nil {
+		info["uptime"] = uptime
+	}
+	if fqdn, err := vchiq.GetFqdn(); err == nil {
+		info["fqdn"] = fqdn
+	}
+	if ips, err := vchiq.GetIps(); err == nil {
+		info["ips"] = ips
+	}
+	if osName, err := vchiq.GetOsName(); err == nil {
+		info["os_name"] = osName
 	}
 
 	if vchiq.IsVcgencmdInstalled() {
@@ -94,7 +109,10 @@ func getInfo(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(info)
 }
 
-// getInfoProcess returns all processes and their information.
+// getInfoProcess godoc
+// @description Retorna todos os processos e suas informações.
+// @tags info
+// @url /api/info/ps
 func getInfoProcess(c *fiber.Ctx) error {
 	ps, err := vchiq.ListProcesses()
 	if err != nil {

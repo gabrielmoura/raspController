@@ -6,7 +6,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// getShare retorna uma lista de arquivos contidos no diretório de compartilhamento.
+// getShare godoc
+// @description Retorna uma lista de arquivos contidos no diretório de compartilhamento.
+// @tags share
+// @url /api/share
 func getShare(c *fiber.Ctx) error {
 	if len(configs.Conf.ShareDir) > 0 {
 		files, err := files.ListDirectory(configs.Conf.ShareDir)
@@ -26,7 +29,10 @@ func getShare(c *fiber.Ctx) error {
 	})
 }
 
-// getShareFile retorna um arquivo do diretório de compartilhamento ou uma lista de arquivos se o caminho for um diretório.
+// getShareFile godoc
+// @Description Retorna um arquivo do diretório de compartilhamento.
+// @tags share
+// @url /api/share/*
 func getShareFile(c *fiber.Ctx) error {
 	if len(configs.Conf.ShareDir) > 0 {
 		filePath := configs.Conf.ShareDir + "/" + c.Params("*")

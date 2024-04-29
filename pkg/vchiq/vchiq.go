@@ -4,11 +4,13 @@ package vchiq
 
 import (
 	"errors"
+	"net"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 // Constants for vcgencmd get_throttled result
@@ -175,6 +177,32 @@ func GetHostname() (string, error) {
 	return clean(string(hostFile)), nil
 }
 
+// GetCPURevision retorna o código de serial da CPU.
+func GetCPUSerial() (string, error) {
+	// Lê o conteúdo do arquivo cpuinfo
+	cpuInfo, err := os.ReadFile("/proc/cpuinfo")
+	if err != nil {
+		return "", err
+	}
+
+	// Converte os dados do cpuinfo para uma string
+	cpuInfoStr := string(cpuInfo)
+
+	// Procura o campo de Serial
+	lines := strings.Split(cpuInfoStr, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "Serial") {
+			parts := strings.Split(line, ":")
+			if len(parts) == 2 {
+				revision := strings.TrimSpace(parts[1])
+				return revision, nil
+			}
+		}
+	}
+
+	return "", errors.New("couldn't find CPU serial in /proc/cpuinfo")
+}
+
 // GetCPURevision retorna o código de revisão da CPU.
 func GetCPURevision() (string, error) {
 	// Lê o conteúdo do arquivo cpuinfo
@@ -218,4 +246,101 @@ func GetDeviceName() (string, error) {
 	default:
 		return "", errors.New("device not recognized")
 	}
+}
+
+// GetUptime retorna o tempo de atividade do sistema.
+func GetUptime() (string, error) {
+	uptime, err := os.ReadFile("/proc/uptime")
+	if err != nil {
+		return "", err
+	}
+
+	uptimeStr := strings.Split(string(uptime), " ")[0]
+	uptimeInt, err := strconv.ParseFloat(uptimeStr, 64)
+	if err != nil {
+		return "", err
+	}
+
+	uptimeDuration := time.Duration(int64(uptimeInt)) * time.Second
+	return uptimeDuration.String(), nil
+}
+
+// GetKernelVersion retorna a versão do kernel.
+func GetKernelVersion() (string, error) {
+	// Lê o conteúdo do arquivo /proc/version
+	version, err := os.ReadFile("/proc/version")
+	if err != nil {
+		return "", err
+	}
+
+	// Converte os dados do arquivo para uma string
+	versionStr := string(version)
+
+	// Divide a string por espaços
+	parts := strings.Fields(versionStr)
+
+	// Retorna a segunda parte da string
+	return parts[2], nil
+}
+
+// GetFqdn retorna o nome de domínio totalmente qualificado do sistema.
+func GetFqdn() (string, error) {
+	// Tenta obter o FQDN usando o comando 'hostname'
+	fqdn, err := exec.Command("hostname", "-f").Output()
+	if err == nil {
+		return clean(string(fqdn)), nil
+	}
+
+	// Se falhar, tenta ler o FQDN do arquivo '/etc/hostname'
+	fqdnFile, err := exec.Command("cat", "/etc/hostname").Output()
+	if err != nil {
+		return "", errors.New("couldn't get FQDN from both 'hostname -f' command and /etc/hostname file")
+	}
+
+	return clean(string(fqdnFile)), nil
+}
+
+// GetLocalIP retorna um slice de endereços IPs.
+func GetIps() ([]net.IP, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, addr := range addrs {
+		ipNet, ok := addr.(*net.IPNet)
+		if !ok || ipNet.IP.IsLoopback() || ipNet.IP.To4() == nil {
+			continue
+		}
+		return []net.IP{ipNet.IP}, nil
+	}
+	return nil, errors.New("couldn't get local IP")
+
+}
+
+// GetOsName retorna o nome do sistema operacional.
+func GetOsName() (string, error) {
+	// pegue de /etc/os-release
+	osRelease, err := os.ReadFile("/etc/os-release")
+	if err != nil {
+		return "", err
+	}
+
+	// Converte os dados do arquivo para uma string
+
+	osReleaseStr := string(osRelease)
+
+	// Procura o campo de nome do sistema operacional
+	lines := strings.Split(osReleaseStr, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "PRETTY_NAME") {
+			parts := strings.Split(line, "=")
+			if len(parts) == 2 {
+				osName := strings.Trim(parts[1], "\"")
+				return osName, nil
+			}
+		}
+	}
+
+	return "", errors.New("couldn't find OS name in /etc/os-release")
 }
