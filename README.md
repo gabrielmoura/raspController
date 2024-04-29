@@ -68,3 +68,10 @@ Content-Type: application/json
     "value": 1
 }
 ```
+
+## Manual Installation
+
+- Create a folder for the app. Example: `/opt/raspc`.
+- Copy the binary and configuration file to the created folder.
+- Copy the service contained in the package folder to `/etc/systemd/system/`.
+- Enable and start the service with `systemctl enable --now raspc.service`.
