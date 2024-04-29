@@ -14,6 +14,7 @@ Control your Raspberry Pi with a web interface.
 - O projeto foi desenvolvido para ser executado em um Raspberry Pi.
 - O projeto usa RoseDB para armazenar os dados para hitórico e gráficos.
 - As configurações devem ser especificadas no arquivo `config.json`.
+- O projeto usa mDns para descoberta de serviços.
 
 ## Configurações
 
@@ -22,6 +23,7 @@ JWT_SECRET: "secretkey"
 DB_DIR: "./db"
 PORT: 8080
 JWT_EXPIRES_IN: 3600
+SHARE_DIR: "/home/rasp/public"
 ```
 
 ## Rotas
@@ -52,4 +54,5 @@ GET /gpio/:id
 
 ```http request
 PATCH /gpio/:id
+
 ```

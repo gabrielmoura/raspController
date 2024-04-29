@@ -47,6 +47,11 @@ func updateGpio(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	if err := pinMode.Validation(); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	// Defina o valor do pino no chip GPIO.
 	if _, err = gpio.SetBool(pinMode.Pin, pinMode.Direction, pinMode.Value); err != nil {

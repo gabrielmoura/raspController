@@ -2,6 +2,7 @@ package configs
 
 import (
 	"errors"
+
 	"github.com/spf13/viper"
 )
 
@@ -11,6 +12,7 @@ type Cfg struct {
 	AppName      string `mapstructure:"APP_NAME"`
 	DBDir        string `mapstructure:"DB_DIR"`
 	Port         int    `mapstructure:"PORT"`
+	ShareDir     string `mapstructure:"SHARE_DIR"`
 }
 
 var Conf *Cfg

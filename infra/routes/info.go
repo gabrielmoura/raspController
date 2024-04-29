@@ -1,12 +1,14 @@
 package routes
 
 import (
-	"github.com/gabrielmoura/raspController/pkg/vchiq"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"time"
+
+	"github.com/gabrielmoura/raspController/pkg/vchiq"
+	"github.com/gofiber/fiber/v2"
 )
 
+// getInfo returns system information.
 func getInfo(c *fiber.Ctx) error {
 	info := make(fiber.Map)
 	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
@@ -78,4 +80,20 @@ func getInfo(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(info)
+}
+
+// getInfoProcess returns all processes and their information.
+func getInfoProcess(c *fiber.Ctx) error {
+	ps, err := vchiq.ListProcesses()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"processes":    ps,
+		"count":        len(ps),
+		"reading_date": time.Now().Format("2006-01-02 15:04:05"),
+	})
 }

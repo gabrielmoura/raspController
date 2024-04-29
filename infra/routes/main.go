@@ -26,8 +26,12 @@ func InitializeRoutes(Fiber *fiber.App) {
 	api := Fiber.Group("/api")
 
 	api.Get("/info", getInfo)
+	api.Get("/info/ps", getInfoProcess)
 	api.Get("/gpio", getGpio)
 	api.Patch("/gpio/:pin", updateGpio)
+
+	api.Get("/share", getShare)
+	api.Get("/share/*", getShareFile)
 
 	//auth := api.Group("/auth")
 

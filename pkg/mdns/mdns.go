@@ -1,29 +1,36 @@
-package mdns // import "example.com/mdns"
+package mdns
 
 import (
-	"github.com/hashicorp/mdns"
 	"net"
 	"os"
+	"os/exec"
+	"strings"
+
+	"github.com/hashicorp/mdns"
 )
 
 // getLocalIP retorna o endereço IP local IPv4 não loopback, se disponível.
-func getLocalIP() string {
+func getLocalIP() []net.IP {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return ""
+		return nil
 	}
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
-			return ipnet.IP.String()
+
+	for _, addr := range addrs {
+		ipNet, ok := addr.(*net.IPNet)
+		if !ok || ipNet.IP.IsLoopback() || ipNet.IP.To4() == nil {
+			continue
 		}
+		return []net.IP{ipNet.IP}
 	}
-	return ""
+	return nil
+
 }
 
 // SetDNS configura o serviço de DNS multicast (mDNS).
 func SetDNS(appName string, appPort int) error {
 	// Obtém o nome do host
-	host, err := os.Hostname()
+	host, err := getHostname()
 	if err != nil {
 		return err
 	}
@@ -32,7 +39,7 @@ func SetDNS(appName string, appPort int) error {
 	info := []string{appName}
 
 	// Cria e configura o serviço mDNS
-	service, err := mdns.NewMDNSService(host, "_rpi._tcp", "", getLocalIP(), appPort, nil, info)
+	service, err := mdns.NewMDNSService(host, "_rpi._tcp", "", host, appPort, getLocalIP(), info)
 	if err != nil {
 		return err
 	}
@@ -47,4 +54,28 @@ func SetDNS(appName string, appPort int) error {
 	}()
 
 	return nil
+}
+
+func getHostname() (string, error) {
+	host, err := os.Hostname()
+	if err == nil {
+		// Adiciona um ponto ao final do nome do host para torná-lo um FQDN válido
+		return clean(host) + ".", nil
+	}
+
+	hostFile, err := exec.Command("cat", "/etc/hostname").Output()
+	if err != nil {
+		return "", err
+	}
+
+	// Adiciona um ponto ao final do nome do host lido do arquivo '/etc/hostname' para torná-lo um FQDN válido
+	return clean(string(hostFile)) + ".", nil
+}
+
+// clean removes specified substrings from the input string and trims the result.
+func clean(str string, args ...string) string {
+	for _, arg := range args {
+		str = strings.ReplaceAll(str, arg, "")
+	}
+	return strings.TrimSpace(str)
 }
