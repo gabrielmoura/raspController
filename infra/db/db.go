@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 
 	"github.com/gabrielmoura/raspController/configs"
 	"github.com/rosedblabs/rosedb/v2"
@@ -60,40 +62,42 @@ func GetJson(name string, value *Map) error {
 
 // SetPin define o valor de um pino no banco de dados.
 func SetPin(pin int, value int) error {
+	gpios := make(Map)
 	// Pode ser mesclado caso o gpio_list já exista.
 	// Ou seja, se o gpio_list já existir, ele será mesclado com o novo valor.
 	// Se não existir, ele será criado.
 	// Busque o valor atual do gpio_list.
-	currentValue, err := Get("gpio_list")
+	err := GetJson("gpio_list", &gpios)
 	if err != nil {
 		// Se não existir, crie um novo.
-		currentValue = "{}"
+		log.Println("DB: gpio_list not found")
 	}
-	// Converta o valor atual para um mapa.
-	var gpioList map[string]int
-	_ = json.Unmarshal([]byte(currentValue), &gpioList)
+
 	// Adicione o novo valor ao mapa.
-	gpioList[string(pin)] = value
-	// Converta o mapa para uma string.
-	newValue, _ := json.Marshal(gpioList)
+	gpios[string(rune(pin))] = value
 	// Salve o novo valor.
-	return Set("gpio_list", string(newValue))
+	return SetJson("gpio_list", gpios)
 }
 
 // GetPin obtém o valor de um pino do banco de dados.
 func GetPin(pin int) (int, error) {
-	// Busque o valor atual do gpio_list.
-	currentValue, err := Get("gpio_list")
+	gpios := make(Map)
+	err := GetJson("gpio_list", &gpios)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error getting pin %d: %s", pin, err.Error())
 	}
-	// Converta o valor atual para um mapa.
-	var gpioList map[string]int
-	_ = json.Unmarshal([]byte(currentValue), &gpioList)
-	// Busque o valor do pino.
-	value, ok := gpioList[string(pin)]
+	value, ok := gpios[string(rune(pin))]
 	if !ok {
-		return 0, errors.New("pin value not found")
+		return 0, errors.New("pin not found")
 	}
-	return value, nil
+	return value.(int), nil
+}
+
+func GetAllPin() (Map, error) {
+	gpios := make(Map)
+	err := GetJson("gpio_list", &gpios)
+	if err != nil {
+		return nil, err
+	}
+	return gpios, nil
 }

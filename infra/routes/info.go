@@ -24,9 +24,23 @@ func getInfo(c *fiber.Ctx) error {
 	if name, err := vchiq.GetDeviceName(); err == nil {
 		info["device_info"] = name
 	}
+
 	if name, err := vchiq.GetCPURevision(); err == nil {
 		info["cpu_revision"] = name
 	}
+	if name, err := vchiq.GetCPUSerial(); err == nil {
+		info["cpu_serial"] = name
+	}
+	if name, err := vchiq.GetCPUModel(); err == nil {
+		info["cpu_model"] = name
+	}
+	if name, err := vchiq.GetCPUCores(); err == nil {
+		info["cpu_cores"] = name
+	}
+	if name, err := vchiq.GetCPUMhz(); err == nil {
+		info["cpu_mhz"] = name + " MHz"
+	}
+
 	if uptime, err := vchiq.GetUptime(); err == nil {
 		info["uptime"] = uptime
 	}

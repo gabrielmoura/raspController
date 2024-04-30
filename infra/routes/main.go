@@ -28,16 +28,18 @@ func InitializeRoutes(Fiber *fiber.App) {
 
 	api.Get("/", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"/api/info":    "Returns system information.",
-			"/api/info/ps": "Returns process information.",
-			"/api/gpio":    "Returns the status of all configured GPIO pins.",
-			"/api/share":   "Returns a list of files contained in the sharing directory.",
+			"/api/info":     "Returns system information.",
+			"/api/info/ps":  "Returns process information.",
+			"/api/gpio":     "Returns the status of all configured GPIO pins.",
+			"/api/gpio/all": "Returns all GPIO pins from the GPIO chip.",
+			"/api/share":    "Returns a list of files contained in the sharing directory.",
 		})
 	})
 
 	api.Get("/info", middleware.CacheMiddleware, getInfo)
 	api.Get("/info/ps", getInfoProcess)
 	api.Get("/gpio", getGpio)
+	api.Get("/gpio/all", getGpioAll)
 	api.Patch("/gpio/:pin", updateGpio)
 
 	api.Get("/share", getShare)

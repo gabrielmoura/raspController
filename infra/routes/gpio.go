@@ -23,7 +23,28 @@ func getGpio(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(list)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"pins": list,
+	})
+}
+
+// getGpioAll All GPIO pins from the GPIO chip.
+func getGpioAll(c *fiber.Ctx) error {
+	if !gpio.CheckChip() {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "GPIO chip not initialized",
+		})
+	}
+	list, err := gpio.GetGPIOInfo()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"pins": list,
+	})
 }
 
 // updateGpio godoc
@@ -60,7 +81,7 @@ func updateGpio(c *fiber.Ctx) error {
 	}
 
 	// Set the pin value on the GPIO chip.
-	if _, err = gpio.SetBool(pinMode.Pin, pinMode.Direction, pinMode.Value); err != nil {
+	if err = gpio.SetBool(pinMode.Pin, pinMode.Direction, pinMode.Value); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})

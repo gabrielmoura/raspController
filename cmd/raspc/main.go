@@ -32,7 +32,7 @@ func main() {
 	routes.InitializeRoutes(app)
 	db.Initialize(ctx)
 
-	gpio.Initialize()
+	gpio.Initialize(ctx)
 	if err := mdns.SetDNS(configs.Conf.AppName, configs.Conf.Port); err != nil {
 		log.Println("Error setting DNS:", err)
 	}

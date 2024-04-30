@@ -19,10 +19,10 @@ const (
 
 // Validation valida a estrutura PinMode.
 func (p *PinMode) Validation() error {
-	if p.Direction != Input && p.Direction != Output {
+	if len(p.Direction) > 0 && p.Direction != Input && p.Direction != Output {
 		return errors.New("invalid direction, use 'in' or 'out'")
 	}
-	if p.Active != Low && p.Active != High {
+	if len(p.Active) > 0 && p.Active != Low && p.Active != High {
 		return errors.New("invalid active state, use 'low' or 'high'")
 	}
 	return nil
