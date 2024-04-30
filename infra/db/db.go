@@ -13,6 +13,8 @@ import (
 // DB representa o banco de dados.
 var DB *rosedb.DB
 
+type Map map[string]interface{}
+
 // Initialize inicializa o banco de dados.
 func Initialize(ctx context.Context) error {
 	options := rosedb.DefaultOptions
@@ -35,6 +37,10 @@ func Initialize(ctx context.Context) error {
 func Set(name, value interface{}) error {
 	return DB.Put([]byte(name.(string)), []byte(value.(string)))
 }
+func SetJson(name string, value interface{}) error {
+	jsonValue, _ := json.Marshal(value)
+	return DB.Put([]byte(name), jsonValue)
+}
 
 // Get recupera o valor associado a uma chave do banco de dados.
 func Get(name string) (string, error) {
@@ -43,6 +49,13 @@ func Get(name string) (string, error) {
 		return "", err
 	}
 	return string(value), nil
+}
+func GetJson(name string, value *Map) error {
+	jsonValue, err := DB.Get([]byte(name))
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsonValue, value)
 }
 
 // SetPin define o valor de um pino no banco de dados.

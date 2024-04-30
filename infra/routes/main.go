@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/gabrielmoura/raspController/infra/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
@@ -27,14 +28,14 @@ func InitializeRoutes(Fiber *fiber.App) {
 
 	api.Get("/", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"/info":    "Retorna informações do sistema.",
-			"/info/ps": "Retorna informações de processos.",
-			"/gpio":    "Retorna o status de todos os pinos GPIO Configurados.",
-			"/share":   "Retorna uma lista de arquivos contidos no diretório de compartilhamento.",
+			"/api/info":    "Returns system information.",
+			"/api/info/ps": "Returns process information.",
+			"/api/gpio":    "Returns the status of all configured GPIO pins.",
+			"/api/share":   "Returns a list of files contained in the sharing directory.",
 		})
 	})
 
-	api.Get("/info", getInfo)
+	api.Get("/info", middleware.CacheMiddleware, getInfo)
 	api.Get("/info/ps", getInfoProcess)
 	api.Get("/gpio", getGpio)
 	api.Patch("/gpio/:pin", updateGpio)

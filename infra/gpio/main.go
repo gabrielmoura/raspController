@@ -55,10 +55,10 @@ func SetBool(pin int, direction string, value int) (int, error) {
 		defer func() {
 			_ = l.Close()
 		}()
-		err = db.SetPin(pin, value)
-		if err != nil {
-			return 0, err
-		}
+		// err = db.SetPin(pin, value)
+		// if err != nil {
+		// 	return 0, err
+		// }
 		return value, nil
 	default:
 		return 0, errors.New("invalid direction provided")

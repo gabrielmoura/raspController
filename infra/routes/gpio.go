@@ -7,7 +7,7 @@ import (
 )
 
 // getGpio godoc
-// @description Retorna o status de todos os pinos GPIO.
+// @description Returns the status of all configured GPIO pins.
 // @tags gpio
 // @url /api/gpio
 func getGpio(c *fiber.Ctx) error {
@@ -27,18 +27,18 @@ func getGpio(c *fiber.Ctx) error {
 }
 
 // updateGpio godoc
-// @description Atualiza o status de um pino GPIO.
+// @description Updates the status of a GPIO pin.
 // @tags gpio
 // @url /api/gpio/{pin}
 func updateGpio(c *fiber.Ctx) error {
-	// Verifique se o chip GPIO está inicializado.
+	// Check whether the GPIO chip is initialized.
 	if !gpio.CheckChip() {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "GPIO chip not initialized",
 		})
 	}
 
-	// Parse do corpo da requisição para obter o modo do pino.
+	// Parse the request body to get the pin mode.
 	var pinMode dto.PinMode
 	err := c.BodyParser(&pinMode)
 	if err != nil {
@@ -59,7 +59,7 @@ func updateGpio(c *fiber.Ctx) error {
 		})
 	}
 
-	// Defina o valor do pino no chip GPIO.
+	// Set the pin value on the GPIO chip.
 	if _, err = gpio.SetBool(pinMode.Pin, pinMode.Direction, pinMode.Value); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

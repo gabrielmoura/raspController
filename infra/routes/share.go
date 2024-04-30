@@ -7,7 +7,7 @@ import (
 )
 
 // getShare godoc
-// @description Retorna uma lista de arquivos contidos no diretório de compartilhamento.
+// @description Returns a list of files contained in the share directory.
 // @tags share
 // @url /api/share
 func getShare(c *fiber.Ctx) error {
@@ -30,7 +30,7 @@ func getShare(c *fiber.Ctx) error {
 }
 
 // getShareFile godoc
-// @Description Retorna um arquivo do diretório de compartilhamento.
+// @Description Returns a file from the share directory.
 // @tags share
 // @url /api/share/*
 func getShareFile(c *fiber.Ctx) error {

@@ -9,11 +9,12 @@ import (
 )
 
 // getInfo godoc
-// @description Retorna informações do sistema.
+// @description Returns system information.
 // @tags info
 // @url /api/info
 func getInfo(c *fiber.Ctx) error {
 	info := make(fiber.Map)
+
 	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
 	if hostname, err := vchiq.GetHostname(); err != nil {
 		log.Println("Error getting hostname:", err)
@@ -110,7 +111,7 @@ func getInfo(c *fiber.Ctx) error {
 }
 
 // getInfoProcess godoc
-// @description Retorna todos os processos e suas informações.
+// @description Returns all processes and their information.
 // @tags info
 // @url /api/info/ps
 func getInfoProcess(c *fiber.Ctx) error {
