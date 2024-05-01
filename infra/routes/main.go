@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/gabrielmoura/raspController/configs"
 	"github.com/gabrielmoura/raspController/infra/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -16,8 +17,8 @@ func InitializeRoutes(Fiber *fiber.App) {
 	Fiber.Use(logger.New(logger.Config{
 		// For more options, see the Config section
 		Format:     "${pid} ${time} ${locals:requestid} ${status} - ${method} ${path}\n",
-		TimeFormat: "02-Jan-2006",
-		TimeZone:   "America/Sao_Paulo",
+		TimeFormat: configs.Conf.TimeFormat,
+		TimeZone:   configs.Conf.TimeZone,
 	}))
 	Fiber.Get("/metrics", monitor.New())
 

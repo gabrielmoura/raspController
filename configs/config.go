@@ -13,6 +13,8 @@ type Cfg struct {
 	DBDir        string `mapstructure:"DB_DIR"`
 	Port         int    `mapstructure:"PORT"`
 	ShareDir     string `mapstructure:"SHARE_DIR"`
+	TimeFormat   string `mapstructure:"TIME_FORMAT"`
+	TimeZone     string `mapstructure:"TIME_ZONE"`
 }
 
 var Conf *Cfg
@@ -26,6 +28,8 @@ func LoadConfig() error {
 	vip.SetDefault("DB_DIR", "/tmp/rosedb")
 	vip.SetDefault("JWT_EXPIRES_IN", 3600)
 	vip.SetDefault("APP_NAME", "RaspController")
+	vip.SetDefault("TIME_FORMAT", "02-Jan-2006")
+	vip.SetDefault("TIME_ZONE", "America/Sao_Paulo")
 
 	// Lendo o arquivo de configuração conf.yml
 	vip.SetConfigName("conf")
