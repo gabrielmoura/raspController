@@ -31,6 +31,8 @@ func LoadConfig() error {
 	vip.SetConfigName("conf")
 	vip.SetConfigType("yml")
 	vip.AddConfigPath(".")
+	vip.AddConfigPath("/opt/raspc")
+	vip.AddConfigPath("/etc/raspc")
 
 	// Lendo as configurações do arquivo conf.yml
 	if err := vip.ReadInConfig(); err != nil {

@@ -22,7 +22,7 @@ func InitializeRoutes(Fiber *fiber.App) {
 	Fiber.Get("/metrics", monitor.New())
 
 	Fiber.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
+		return c.SendString("RaspController API")
 	})
 	api := Fiber.Group("/api")
 
