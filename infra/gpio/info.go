@@ -3,16 +3,11 @@ package gpio
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
-)
-
-// Regular Expressions for parsing
-var (
-	chipRegex = regexp.MustCompile(`GPIO chip: (\S+), "(.+)", (\d+) GPIO lines`)
-	lineRegex = regexp.MustCompile(`\s*line\s*(\d+):\s*"(.+)"\s*(used|unused)\s*\[([^\[\]]*)\]\s*`)
 )
 
 // GPIOInfo represents the information of a GPIO chip
@@ -34,20 +29,80 @@ type LineInfo struct {
 
 // GetGPIOInfo retrieves information about available GPIOs
 func GetGPIOInfo() ([]GPIOInfo, error) {
-	if _, err := exec.LookPath("lsgpio"); err != nil {
-		return nil, errors.New("lsgpio command not found")
+	if _, err := exec.LookPath("lsgpio"); err == nil {
+
+		output, err := exec.Command("lsgpio").Output()
+		if err != nil {
+			return nil, fmt.Errorf("error executing lsgpio: %v", err)
+		}
+		return parseLsGPIO(string(output))
 	}
 
-	output, err := exec.Command("lsgpio").Output()
-	if err != nil {
-		return nil, fmt.Errorf("error executing lsgpio: %v", err)
+	if _, err := exec.LookPath("gpioinfo"); err == nil {
+		output, err := exec.Command("gpioinfo").Output()
+		if err != nil {
+			return nil, fmt.Errorf("error executing lsgpio: %v", err)
+		}
+		return parseGPIOInfo(string(output))
+
+	}
+	log.Println("gpiod is required to get GPIO information")
+	return nil, errors.New("lsgpio and gpioinfo command not found")
+}
+
+// parseGPIOInfo processes the output of the gpioinfo command
+func parseGPIOInfo(output string) ([]GPIOInfo, error) {
+	chipRegex := regexp.MustCompile(`(gpiochip\d+) - (\d+) lines:`)
+	lineRegex := regexp.MustCompile(`\s*line\s*\s*(\d+):\s*["'](\w+)["']\s*(unused|used|shutdown|hpd|cam1_regulator|PWR|ACT)\s*(input|output)\s*(active-high|active-low)`)
+
+	var gpioInfo []GPIOInfo
+	var currentChip *GPIOInfo
+
+	lines := strings.Split(output, "\n")
+
+	for _, line := range lines {
+		if chipMatch := chipRegex.FindStringSubmatch(line); chipMatch != nil {
+			if currentChip != nil {
+				gpioInfo = append(gpioInfo, *currentChip)
+			}
+			currentChip = &GPIOInfo{
+				DeviceName: chipMatch[1],
+				Name:       chipMatch[1],
+			}
+		} else if lineMatch := lineRegex.FindStringSubmatch(line); lineMatch != nil {
+			lineInfo := LineInfo{
+				Number:    parseInt(lineMatch[1]),
+				Name:      lineMatch[2],
+				Function:  lineMatch[3],
+				Direction: lineMatch[4],
+			}
+
+			if lineMatch[3] == "used" {
+				lineInfo.Used = true
+			} else {
+				lineInfo.Used = false
+			}
+
+			lineInfo.Flags = []string{lineMatch[5]}
+
+			if currentChip != nil {
+				currentChip.Lines = append(currentChip.Lines, lineInfo)
+			}
+		}
 	}
 
-	return parseGPIOOutput(string(output))
+	if currentChip != nil {
+		gpioInfo = append(gpioInfo, *currentChip)
+	}
+
+	return gpioInfo, nil
 }
 
 // parseGPIOOutput processes the output of the lsgpio command
-func parseGPIOOutput(output string) ([]GPIOInfo, error) {
+func parseLsGPIO(output string) ([]GPIOInfo, error) {
+	chipRegex := regexp.MustCompile(`GPIO chip: (\S+), "(.+)", (\d+) GPIO lines`)
+	lineRegex := regexp.MustCompile(`\s*line\s*(\d+):\s*"(.+)"\s*(used|unused)\s*\[([^\[\]]*)\]\s*`)
+
 	var gpioInfo []GPIOInfo
 	var currentChip *GPIOInfo
 

@@ -70,6 +70,7 @@ func IsVcgencmdInstalled() bool {
 }
 
 // GetDeviceName retorna o nome do dispositivo com base no código de revisão da CPU.
+// Consulte https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
 func GetDeviceName() (string, error) {
 	revision, err := GetCPURevision()
 	if err != nil {
@@ -77,12 +78,50 @@ func GetDeviceName() (string, error) {
 	}
 
 	switch revision {
-	case "a02082":
+	case "900021":
+		return "Raspberry Pi Zero", nil
+	case "900032":
+		return "Raspberry Pi Zero W", nil
+	case "900092", "920092":
+		return "Raspberry Pi Zero", nil
+	case "900093", "920093":
+		return "Raspberry Pi Zero", nil
+	case "9000c1":
+		return "Raspberry Pi Zero W", nil
+	case "9020e0", "9020e1":
+		return "Raspberry Pi 3 Model A+", nil
+	case "a01040", "a01041", "a21041":
+		return "Raspberry Pi 2 Model B", nil
+	case "a02082", "a22082", "a32082", "a52082":
 		return "Raspberry Pi 3 Model B", nil
-	case "a020d3":
+	case "a020a0", "a220a0":
+		return "Raspberry Pi Compute Module 3", nil
+	case "a020d3", "a22083":
 		return "Raspberry Pi 3 Model B+", nil
-	case "a03111", "b03111", "b03112", "c03111", "c03112":
-		return "Raspberry Pi 4", nil
+	case "a020d4":
+		return "Raspberry Pi 3 Model B+", nil
+	case "a02042", "a22042":
+		return "Raspberry Pi 2 Model B (with BCM2837)", nil
+	case "a02100":
+		return "Raspberry Pi Compute Module 3+", nil
+	case "a03111", "b03111", "c03111":
+		return "Raspberry Pi 4 Model B", nil
+	case "b03112", "c03112":
+		return "Raspberry Pi 4 Model B", nil
+	case "b03114", "c03114":
+		return "Raspberry Pi 4 Model B", nil
+	case "b03115", "c03115":
+		return "Raspberry Pi 4 Model B", nil
+	case "c03130":
+		return "Raspberry Pi 400", nil
+	case "a03140", "b03140", "c03140", "d03140":
+		return "Raspberry Pi Compute Module 4", nil
+	case "902120":
+		return "Raspberry Pi Zero 2 W", nil
+	case "c04170":
+		return "Raspberry Pi 5", nil
+	case "d04170":
+		return "Raspberry Pi 5", nil
 	default:
 		return "", errors.New("device not recognized")
 	}

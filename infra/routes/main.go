@@ -36,10 +36,10 @@ func InitializeRoutes(Fiber *fiber.App) {
 		})
 	})
 
-	api.Get("/info", middleware.CacheMiddleware, getInfo)
+	api.Get("/info", middleware.CacheMiddleware(5), getInfo)
 	api.Get("/info/ps", getInfoProcess)
 	api.Get("/gpio", getGpio)
-	api.Get("/gpio/all", getGpioAll)
+	api.Get("/gpio/all", middleware.CacheMiddleware(1), getGpioAll)
 	api.Patch("/gpio/:pin", updateGpio)
 
 	api.Get("/share", getShare)
