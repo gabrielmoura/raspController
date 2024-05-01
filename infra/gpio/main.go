@@ -12,6 +12,7 @@ import (
 )
 
 var Chip *gpiocdev.Chip
+var chipContext context.Context
 
 func Initialize(ctx context.Context) error {
 	c, err := gpiocdev.NewChip("gpiochip0", gpiocdev.WithConsumer(configs.Conf.AppName))
@@ -19,6 +20,7 @@ func Initialize(ctx context.Context) error {
 		log.Println("Error opening GPIO chip:", err.Error())
 	} else {
 		Chip = c
+		chipContext = ctx
 		if ctx.Err() != nil {
 			log.Println("Closing GPIO chip")
 			_ = c.Close()
@@ -40,9 +42,14 @@ func setOutput(pin int, value int) error {
 	stat, _ := l.Info()
 
 	log.Printf("GPIO: Pin %d value: %d status: %+v", pin, value, stat)
-	defer func() {
+
+	if chipContext.Err() != nil {
+		log.Printf("GPIO: Closing pin %d", pin)
 		_ = l.Close()
-	}()
+	}
+	// defer func() {
+	// 	_ = l.Close()
+	// }()
 	err = db.SetPin(pin, value)
 	if err != nil {
 		return fmt.Errorf("GPIO: Error setting pin value: %s", err.Error())
@@ -54,9 +61,10 @@ func setInput(pin int) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
+	if chipContext.Err() != nil {
+		log.Printf("GPIO: Closing pin %d", pin)
 		_ = l.Close()
-	}()
+	}
 	err = db.SetPin(pin, 0)
 	if err != nil {
 		return err
