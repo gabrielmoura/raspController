@@ -53,7 +53,7 @@ func GetGPIOInfo() ([]GPIOInfo, error) {
 // parseGPIOInfo processes the output of the gpioinfo command
 func parseGPIOInfo(output string) ([]GPIOInfo, error) {
 	chipRegex := regexp.MustCompile(`(gpiochip\d+) - (\d+) lines:`)
-	lineRegex := regexp.MustCompile(`\s*line\s*\s*(\d+):\s*["'](\w+)["']\s*(unused|used|shutdown|hpd|cam1_regulator|PWR|ACT)\s*(input|output)\s*(active-high|active-low)`)
+	lineRegex := regexp.MustCompile(`\s*line\s*(\d+):\s*["']?(\w+)["']?\s*(\S+)\s*(input|output)\s*(active-high|active-low)\s*(?:\s*\[([\w\s]+)\])?`)
 
 	var gpioInfo []GPIOInfo
 	var currentChip *GPIOInfo
@@ -73,15 +73,11 @@ func parseGPIOInfo(output string) ([]GPIOInfo, error) {
 			lineInfo := LineInfo{
 				Number:    parseInt(lineMatch[1]),
 				Name:      lineMatch[2],
-				Function:  lineMatch[3],
+				Function:  parseCleanString(lineMatch[3]),
 				Direction: lineMatch[4],
 			}
 
-			if lineMatch[3] == "used" {
-				lineInfo.Used = true
-			} else {
-				lineInfo.Used = false
-			}
+			lineInfo.Used = strings.Contains(lineMatch[6], "used")
 
 			lineInfo.Flags = []string{lineMatch[5]}
 
@@ -163,4 +159,8 @@ func parseLsGPIO(output string) ([]GPIOInfo, error) {
 func parseInt(s string) int {
 	num, _ := strconv.Atoi(s)
 	return num
+}
+
+func parseCleanString(s string) string {
+	return strings.Trim(s, "\"")
 }

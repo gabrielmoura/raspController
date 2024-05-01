@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/gabrielmoura/raspController/configs"
+	"github.com/gabrielmoura/raspController/internal/dto"
 	"github.com/rosedblabs/rosedb/v2"
 )
 
@@ -16,6 +17,7 @@ import (
 var DB *rosedb.DB
 
 type Map map[string]interface{}
+type PinMap map[int]dto.PinMode
 
 // Initialize inicializa o banco de dados.
 func Initialize(ctx context.Context) error {
@@ -59,38 +61,45 @@ func GetJson(name string, value *Map) error {
 	}
 	return json.Unmarshal(jsonValue, value)
 }
+func GetJsonPin(name string, value *PinMap) error {
+	jsonValue, err := DB.Get([]byte(name))
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsonValue, value)
+}
 
 // SetPin define o valor de um pino no banco de dados.
-func SetPin(pin int, value int) error {
-	gpios := make(Map)
+func SetPin(pin dto.PinMode) error {
+	gpios := make(PinMap)
 	// Pode ser mesclado caso o gpio_list já exista.
 	// Ou seja, se o gpio_list já existir, ele será mesclado com o novo valor.
 	// Se não existir, ele será criado.
 	// Busque o valor atual do gpio_list.
-	err := GetJson("gpio_list", &gpios)
+	err := GetJsonPin("gpio_list", &gpios)
 	if err != nil {
 		// Se não existir, crie um novo.
 		log.Println("DB: gpio_list not found")
 	}
 
 	// Adicione o novo valor ao mapa.
-	gpios[string(rune(pin))] = value
+	gpios[pin.Pin] = pin
 	// Salve o novo valor.
 	return SetJson("gpio_list", gpios)
 }
 
 // GetPin obtém o valor de um pino do banco de dados.
 func GetPin(pin int) (int, error) {
-	gpios := make(Map)
-	err := GetJson("gpio_list", &gpios)
+	gpios := make(PinMap)
+	err := GetJsonPin("gpio_list", &gpios)
 	if err != nil {
 		return 0, fmt.Errorf("error getting pin %d: %s", pin, err.Error())
 	}
-	value, ok := gpios[string(rune(pin))]
+	value, ok := gpios[pin]
 	if !ok {
 		return 0, errors.New("pin not found")
 	}
-	return value.(int), nil
+	return value.Pin, nil
 }
 
 func GetAllPin() (Map, error) {

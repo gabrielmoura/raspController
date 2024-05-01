@@ -8,11 +8,12 @@ import (
 
 	"github.com/gabrielmoura/raspController/configs"
 	"github.com/gabrielmoura/raspController/infra/db"
+	"github.com/gabrielmoura/raspController/internal/dto"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 var Chip *gpiocdev.Chip
-var chipContext context.Context
+var lines = make(map[int]*gpiocdev.Line)
 
 func Initialize(ctx context.Context) error {
 	c, err := gpiocdev.NewChip("gpiochip0", gpiocdev.WithConsumer(configs.Conf.AppName))
@@ -20,7 +21,6 @@ func Initialize(ctx context.Context) error {
 		log.Println("Error opening GPIO chip:", err.Error())
 	} else {
 		Chip = c
-		chipContext = ctx
 		if ctx.Err() != nil {
 			log.Println("Closing GPIO chip")
 			_ = c.Close()
@@ -32,40 +32,35 @@ func Initialize(ctx context.Context) error {
 func CheckChip() bool {
 	return Chip != nil
 }
-func setOutput(pin int, value int) error {
-	l, err := Chip.RequestLine(pin, gpiocdev.AsOutput(value))
+func setOutput(pin dto.PinMode) error {
+	if lines[pin.Pin] != nil {
+		_ = lines[pin.Pin].Close()
+	}
+	l, err := Chip.RequestLine(pin.Pin, gpiocdev.AsOutput(pin.Value))
 	if err != nil {
 		log.Println("GPIO: Error setting output:", err.Error())
 		return err
 	}
-	log.Printf("GPIO: Pin %d set to %d", pin, value)
-	stat, _ := l.Info()
+	log.Printf("GPIO: Pin %d set to %d", pin.Pin, pin.Value)
+	lines[pin.Pin] = l
 
-	log.Printf("GPIO: Pin %d value: %d status: %+v", pin, value, stat)
-
-	if chipContext.Err() != nil {
-		log.Printf("GPIO: Closing pin %d", pin)
-		_ = l.Close()
-	}
-	// defer func() {
-	// 	_ = l.Close()
-	// }()
-	err = db.SetPin(pin, value)
+	err = db.SetPin(pin)
 	if err != nil {
 		return fmt.Errorf("GPIO: Error setting pin value: %s", err.Error())
 	}
 	return nil
 }
-func setInput(pin int) error {
-	l, err := Chip.RequestLine(pin, gpiocdev.AsInput)
+
+func setInput(pin dto.PinMode) error {
+	if lines[pin.Pin] != nil {
+		_ = lines[pin.Pin].Close()
+	}
+	l, err := Chip.RequestLine(pin.Pin, gpiocdev.AsInput)
 	if err != nil {
 		return err
 	}
-	if chipContext.Err() != nil {
-		log.Printf("GPIO: Closing pin %d", pin)
-		_ = l.Close()
-	}
-	err = db.SetPin(pin, 0)
+
+	err = db.SetPin(pin)
 	if err != nil {
 		return err
 	}
@@ -74,15 +69,16 @@ func setInput(pin int) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Pin %d value: %d", pin, val)
+	lines[pin.Pin] = l
+	log.Printf("Pin %d value: %d", pin.Pin, val)
 	return nil
 }
 
-func SetBool(pin int, direction string, value int) error {
-	if direction != "in" && direction != "out" {
+func SetBool(pin dto.PinMode) error {
+	if pin.Direction != "in" && pin.Direction != "out" {
 		return errors.New("invalid direction")
-	} else if direction == "out" {
-		return setOutput(pin, value)
+	} else if pin.Direction == "out" {
+		return setOutput(pin)
 	} else {
 		return setInput(pin)
 	}
