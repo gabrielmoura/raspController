@@ -29,16 +29,24 @@ func InitializeRoutes(Fiber *fiber.App) {
 
 	api.Get("/", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"/api/info":     "Returns system information.",
-			"/api/info/ps":  "Returns process information.",
-			"/api/gpio":     "Returns the status of all configured GPIO pins.",
-			"/api/gpio/all": "Returns all GPIO pins from the GPIO chip.",
-			"/api/share":    "Returns a list of files contained in the sharing directory.",
+			"/api/info":      "Returns system information.",
+			"/api/info/ps":   "Returns process information.",
+			"/api/info/net":  "Returns network information.",
+			"/api/info/mem":  "Returns memory information.",
+			"/api/info/disk": "Returns disk information.",
+			"/api/info/gpio": "Returns list of available GPIOs",
+			"/api/gpio":      "Returns the status of all configured GPIO pins.",
+			"/api/gpio/all":  "Returns all GPIO pins from the GPIO chip.",
+			"/api/share":     "Returns a list of files contained in the sharing directory.",
 		})
 	})
 
 	api.Get("/info", middleware.CacheMiddleware(5), getInfo)
+	api.Get("/info/net", getNet)
+	api.Get("/info/mem", getMem)
+	api.Get("/info/disk", getDisk)
 	api.Get("/info/ps", getInfoProcess)
+	api.Get("/info/gpio", getGpioList)
 	api.Get("/gpio", getGpio)
 	api.Get("/gpio/all", middleware.CacheMiddleware(1), getGpioAll)
 	api.Patch("/gpio/:pin", updateGpio)

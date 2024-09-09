@@ -25,7 +25,7 @@ func LoadConfig() error {
 
 	// Definindo valores padrão
 	vip.SetDefault("PORT", 8000)
-	vip.SetDefault("DB_DIR", "/tmp/rosedb")
+	vip.SetDefault("DB_DIR", "/tmp/raspc")
 	vip.SetDefault("JWT_EXPIRES_IN", 3600)
 	vip.SetDefault("APP_NAME", "RaspController")
 	vip.SetDefault("TIME_FORMAT", "02-Jan-2006")

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/gabrielmoura/raspController/infra/gpio"
 	"log"
 	"time"
 
@@ -53,6 +54,9 @@ func getInfo(c *fiber.Ctx) error {
 	if osName, err := vchiq.GetOsName(); err == nil {
 		info["os_name"] = osName
 	}
+	if netStat, err := vchiq.GetNetStatistic(); err == nil {
+		info["net_stat"] = netStat
+	}
 
 	if vchiq.IsVcgencmdInstalled() {
 		if volt, err := vchiq.GetCoreVolt(); err != nil {
@@ -71,6 +75,12 @@ func getInfo(c *fiber.Ctx) error {
 			log.Println("Error getting throttled status:", err)
 		} else {
 			info["throttled"] = throttled
+		}
+
+		if throttled, err := vchiq.GetThrottledInfo(); err != nil {
+			log.Println("Error getting throttled status:", err)
+		} else {
+			info["throttled_info"] = throttled
 		}
 
 		if arm, gpu, err := vchiq.GetMem(); err != nil {
@@ -124,6 +134,71 @@ func getInfo(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(info)
 }
 
+// getMem godoc
+// @description Returns memory information.
+// @tags info
+// @url /api/info/mem
+func getMem(c *fiber.Ctx) error {
+	info := make(fiber.Map)
+	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
+	if vchiq.IsVcgencmdInstalled() {
+		if arm, gpu, err := vchiq.GetMem(); err != nil {
+			log.Println("Error getting memory info:", err)
+		} else {
+			info["arm_mem"] = arm
+			info["gpu_mem"] = gpu
+		}
+	}
+
+	if total, free, used, err := vchiq.GetMemory(); err != nil {
+		log.Println("Error getting memory info:", err)
+	} else {
+		info["memory"] = fiber.Map{
+			"total": total,
+			"free":  free,
+			"used":  used,
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(info)
+}
+
+// getDisk godoc
+// @description Returns disk information.
+// @tags info
+// @url /api/info/disk
+func getDisk(c *fiber.Ctx) error {
+	info := make(fiber.Map)
+	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
+	if boot, root, home, err := vchiq.GetDiskUsage(); err != nil {
+		log.Println("Error getting disk usage:", err)
+	} else {
+		info["disk"] = fiber.Map{
+			"boot": boot,
+			"root": root,
+			"home": home,
+		}
+	}
+	return c.Status(fiber.StatusOK).JSON(info)
+}
+
+// getNet godoc
+// @description Returns network information.
+// @tags info
+// @url /api/info/net
+func getNet(c *fiber.Ctx) error {
+	net, err := vchiq.GetNetStatistic()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"network":      net,
+		"reading_date": time.Now().Format("2006-01-02 15:04:05"),
+	})
+}
+
 // getInfoProcess godoc
 // @description Returns all processes and their information.
 // @tags info
@@ -140,5 +215,21 @@ func getInfoProcess(c *fiber.Ctx) error {
 		"processes":    ps,
 		"count":        len(ps),
 		"reading_date": time.Now().Format("2006-01-02 15:04:05"),
+	})
+}
+
+// getGpioList godoc
+// @description Returns list of available GPIOs
+// @tags info
+// @url /api/info/gpio
+func getGpioList(c *fiber.Ctx) error {
+	list, err := gpio.GetGpioAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"gpio": list,
 	})
 }
