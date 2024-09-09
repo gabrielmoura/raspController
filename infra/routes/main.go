@@ -35,6 +35,8 @@ func InitializeRoutes(Fiber *fiber.App) {
 			"/api/info/mem":  "Returns memory information.",
 			"/api/info/disk": "Returns disk information.",
 			"/api/info/gpio": "Returns list of available GPIOs",
+			"/api/info/usb":  "Returns list of USB devices",
+			"/api/info/cpu":  "Returns CPU information.",
 			"/api/gpio":      "Returns the status of all configured GPIO pins.",
 			"/api/gpio/all":  "Returns all GPIO pins from the GPIO chip.",
 			"/api/share":     "Returns a list of files contained in the sharing directory.",
@@ -46,6 +48,8 @@ func InitializeRoutes(Fiber *fiber.App) {
 	api.Get("/info/mem", getMem)
 	api.Get("/info/disk", getDisk)
 	api.Get("/info/ps", getInfoProcess)
+	api.Get("/info/usb", getUsb)
+	api.Get("/info/cpu", middleware.CacheMiddleware(5), getCpu)
 	api.Get("/info/gpio", getGpioList)
 	api.Get("/gpio", getGpio)
 	api.Get("/gpio/all", middleware.CacheMiddleware(1), getGpioAll)

@@ -54,6 +54,9 @@ func getInfo(c *fiber.Ctx) error {
 	if osName, err := vchiq.GetOsName(); err == nil {
 		info["os_name"] = osName
 	}
+	if kernelVersion, err := vchiq.GetKernelVersion(); err == nil {
+		info["kernel"] = kernelVersion
+	}
 	if netStat, err := vchiq.GetNetStatistic(); err == nil {
 		info["net_stat"] = netStat
 	}
@@ -232,4 +235,39 @@ func getGpioList(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"gpio": list,
 	})
+}
+
+// getUsb godoc
+// @description Returns list of USB devices
+// @tags info
+// @url /api/info/usb
+func getUsb(c *fiber.Ctx) error {
+	list, err := vchiq.GetUsbList()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"usb": list,
+	})
+}
+
+// getCpu godoc
+// @description Returns CPU information.
+// @tags info
+// @url /api/info/cpu
+func getCpu(c *fiber.Ctx) error {
+	info := make(fiber.Map)
+	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
+	cpus, err := vchiq.GetCpus()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	info["cpus"] = cpus
+
+	return c.Status(fiber.StatusOK).JSON(info)
 }
