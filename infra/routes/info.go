@@ -92,6 +92,12 @@ func getInfo(c *fiber.Ctx) error {
 			info["arm_mem"] = arm
 			info["gpu_mem"] = gpu
 		}
+
+		if freq, err := vchiq.GetCPUCurrFreq(); err != nil {
+			log.Println("Error getting CPU frequency:", err)
+		} else {
+			info["cpu_freq"] = freq
+		}
 	}
 
 	if temp, err := vchiq.GetCPUTemp(); err != nil {
@@ -99,16 +105,36 @@ func getInfo(c *fiber.Ctx) error {
 	} else {
 		info["cpu_temp"] = temp
 	}
+	var disks = make(map[string]fiber.Map)
 
-	if boot, root, home, err := vchiq.GetDiskUsage(); err != nil {
-		log.Println("Error getting disk usage:", err)
+	if boot, root, home, err := vchiq.RetrieveDiskUsagePercent(); err != nil {
+		log.Println("Error getting disk percent usage:", err)
 	} else {
-		info["disk"] = fiber.Map{
+		disks["percent"] = fiber.Map{
 			"boot": boot,
 			"root": root,
 			"home": home,
 		}
 	}
+	if boot, root, home, err := vchiq.RetrieveDiskTotal(); err != nil {
+		log.Println("Error getting disk total:", err)
+	} else {
+		disks["total"] = fiber.Map{
+			"boot": boot,
+			"root": root,
+			"home": home,
+		}
+	}
+	if boot, root, home, err := vchiq.RetrieveDiskUsage(); err != nil {
+		log.Println("Error getting disk usage:", err)
+	} else {
+		disks["usage"] = fiber.Map{
+			"boot": boot,
+			"root": root,
+			"home": home,
+		}
+	}
+	info["disks"] = disks
 
 	if usedPercent, err := vchiq.GetMemoryUsagePercent(); err != nil {
 		log.Println("Error getting memory usage percent:", err)
@@ -173,15 +199,36 @@ func getMem(c *fiber.Ctx) error {
 func getDisk(c *fiber.Ctx) error {
 	info := make(fiber.Map)
 	info["reading_date"] = time.Now().Format("2006-01-02 15:04:05")
-	if boot, root, home, err := vchiq.GetDiskUsage(); err != nil {
-		log.Println("Error getting disk usage:", err)
+	var disks = make(map[string]fiber.Map)
+
+	if boot, root, home, err := vchiq.RetrieveDiskUsagePercent(); err != nil {
+		log.Println("Error getting disk percent usage:", err)
 	} else {
-		info["disk"] = fiber.Map{
+		disks["percent"] = fiber.Map{
 			"boot": boot,
 			"root": root,
 			"home": home,
 		}
 	}
+	if boot, root, home, err := vchiq.RetrieveDiskTotal(); err != nil {
+		log.Println("Error getting disk total:", err)
+	} else {
+		disks["total"] = fiber.Map{
+			"boot": boot,
+			"root": root,
+			"home": home,
+		}
+	}
+	if boot, root, home, err := vchiq.RetrieveDiskUsage(); err != nil {
+		log.Println("Error getting disk usage:", err)
+	} else {
+		disks["usage"] = fiber.Map{
+			"boot": boot,
+			"root": root,
+			"home": home,
+		}
+	}
+	info["disks"] = disks
 	return c.Status(fiber.StatusOK).JSON(info)
 }
 

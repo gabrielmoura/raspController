@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"os/exec"
+	"strconv"
+	"strings"
 )
 
 // Field representa um campo no JSON retornado pelo comando `lscpu -J`
@@ -39,4 +41,18 @@ func GetCpus() ([]Field, error) {
 	}
 
 	return lscpuData.Lscpu, nil
+}
+
+// GetCPUCurrFreq retorna a frequência atual do CPU em MHz
+func GetCPUCurrFreq() (float64, error) {
+	out, err := exec.Command("vcgencmd", "measure_clock", "arm").Output()
+	if err != nil {
+		return 0, err
+	}
+	freqStr := strings.Split(string(out), "=")[1]
+	freq, err := strconv.ParseFloat(strings.TrimSpace(freqStr), 64)
+	if err != nil {
+		return 0, err
+	}
+	return freq / 1000000, nil
 }

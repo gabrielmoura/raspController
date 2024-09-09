@@ -61,34 +61,88 @@ func GetMemory() (float64, float64, float64, error) {
 	return total, free, used, nil
 }
 
-// GetDiskUsage returns the usage percentage of boot, root, and home partitions.
-func GetDiskUsage() (float64, float64, float64, error) {
-	bootUsage, err := getDiskUsage("/boot")
+// RetrieveDiskUsagePercent returns the usage percentage of boot, root, and home partitions.
+func RetrieveDiskUsagePercent() (float64, float64, float64, error) {
+	bootUsage, err := calculateDiskUsage("/boot", true)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	rootUsage, err := getDiskUsage("/")
+	rootUsage, err := calculateDiskUsage("/", true)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	homeUsage, err := getDiskUsage("/home")
+	homeUsage, err := calculateDiskUsage("/home", true)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	return bootUsage, rootUsage, homeUsage, nil
 }
 
-// getDiskUsage returns the usage percentage of the specified path.
-func getDiskUsage(path string) (float64, error) {
-	fs := syscall.Statfs_t{}
+// RetrieveDiskUsage returns the usage of boot, root, and home partitions in bytes.
+func RetrieveDiskUsage() (int, int, int, error) {
+	bootUsage, err := calculateDiskUsage("/boot", false)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	rootUsage, err := calculateDiskUsage("/", false)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	homeUsage, err := calculateDiskUsage("/home", false)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	return int(bootUsage), int(rootUsage), int(homeUsage), nil
+}
+
+// RetrieveDiskTotal returns the total disk space of boot, root, and home partitions in bytes.
+func RetrieveDiskTotal() (int, int, int, error) {
+	bootTotal, _, _, err := getDiskSize("/boot")
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	rootTotal, _, _, err := getDiskSize("/")
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	homeTotal, _, _, err := getDiskSize("/home")
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	return int(bootTotal), int(rootTotal), int(homeTotal), nil
+}
+
+func calculateDiskUsage(path string, percent bool) (float64, error) {
+	var fs syscall.Statfs_t
+
 	if err := syscall.Statfs(path, &fs); err != nil {
 		return 0, err
 	}
-	total := fs.Blocks * uint64(fs.Bsize)
-	free := fs.Bfree * uint64(fs.Bsize)
-	used := total - free
-	usedPercent := float64(used) / float64(total)
-	return usedPercent, nil
+
+	totalBlocks := fs.Blocks
+	blockSize := fs.Bsize
+	totalSpace := float64(totalBlocks * uint64(blockSize))
+	freeSpace := float64(fs.Bfree * uint64(blockSize))
+	usedSpace := totalSpace - freeSpace
+	usedPercent := usedSpace / totalSpace
+
+	if percent {
+		return usedPercent, nil
+	}
+
+	return usedSpace, nil
+}
+
+func getDiskSize(path string) (float64, float64, float64, error) {
+	var fs syscall.Statfs_t
+
+	if err := syscall.Statfs(path, &fs); err != nil {
+		return 0, 0, 0, err
+	}
+	totalSpace := float64(fs.Blocks * uint64(fs.Bsize))
+	freeSpace := float64(fs.Bfree * uint64(fs.Bsize))
+	availableSpace := float64(fs.Bavail * uint64(fs.Bsize))
+	return totalSpace, freeSpace, availableSpace, nil
 }
 
 func GetHostname() (string, error) {
