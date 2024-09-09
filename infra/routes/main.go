@@ -27,7 +27,7 @@ func InitializeRoutes(Fiber *fiber.App) {
 	})
 	api := Fiber.Group("/api")
 
-	api.Get("/", func(c *fiber.Ctx) error {
+	api.Get("", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"/api/info":      "Returns system information.",
 			"/api/info/ps":   "Returns process information.",

@@ -46,6 +46,7 @@ func LoadConfig() error {
 			return err
 		}
 	}
+	vip.AutomaticEnv()
 
 	// Se JWT_SECRET não estiver definido, retorne um erro
 	if !vip.IsSet("JWT_SECRET") {

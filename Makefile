@@ -6,6 +6,7 @@ ALL:
 	@echo "Usage:"
 	@echo "  make build-arm64  # For Raspberry Pi 3 and newer (64-bit)"
 	@echo "  make build-arm32  # For Raspberry Pi 3 and older (32-bit)"
+	@echo "  make build        # For current platform"
 	@echo "  make compress     # Compress the binary using UPX"
 	@echo "  make doc          # Run Go documentation server on port 6060"
 
@@ -20,6 +21,9 @@ build-arm32:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" -o raspc cmd/raspc/main.go
 	$(MAKE) show
 
+build:
+	CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o raspc cmd/raspc/main.go
+	$(MAKE) show
 
 # Compress the binary using UPX
 compress:
@@ -33,4 +37,4 @@ show:
 doc:
 	godoc -http=:6060
 
-.PHONY: ALL build-arm64 build-arm32 compress doc
+.PHONY: ALL build-arm64 build-arm32 compress doc build
