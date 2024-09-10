@@ -16,8 +16,8 @@ import (
 var (
 	Chip  *gpiocdev.Chip
 	lines = make(map[int]*gpiocdev.Line)
-	mu    sync.RWMutex // RWMutex permite múltiplas leituras concorrentes
-	once  sync.Once    // Garante que a inicialização ocorra apenas uma vez
+	mu    sync.RWMutex // RWMutex allows multiple concurrent readings
+	once  sync.Once    // Ensures that initialization only occurs once
 )
 
 func initializeChip(ctx context.Context) error {

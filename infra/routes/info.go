@@ -249,25 +249,6 @@ func getNet(c *fiber.Ctx) error {
 	})
 }
 
-// getInfoProcess godoc
-// @description Returns all processes and their information.
-// @tags info
-// @url /api/info/ps
-func getInfoProcess(c *fiber.Ctx) error {
-	ps, err := vchiq.ListProcesses()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"processes":    ps,
-		"count":        len(ps),
-		"reading_date": time.Now().Format("2006-01-02 15:04:05"),
-	})
-}
-
 // getGpioList godoc
 // @description Returns list of available GPIOs
 // @tags info

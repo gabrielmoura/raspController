@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/mdns"
 )
 
-// getLocalIP retorna o endereço IP local IPv4 não loopback, se disponível.
+// getLocalIP returns the non-loopback IPv4 local IP address, if available.
 func getLocalIP() []net.IP {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
@@ -25,21 +25,21 @@ func getLocalIP() []net.IP {
 
 }
 
-// SetDNS configura o serviço de DNS multicast (mDNS).
+// SetDNS configures the multicast DNS (mDNS) service.
 func SetDNS(appName string, appPort int) error {
-	// Obtém o nome do host
+	// Get the host name
 	host, _ := os.Hostname()
 
-	// Cria as informações do serviço
+	// Creates the service information
 	info := []string{appName}
 
-	// Cria e configura o serviço mDNS
+	// Creates and configures the mDNS service
 	service, err := mdns.NewMDNSService(host, "_rpi._tcp", "", "", appPort, getLocalIP(), info)
 	if err != nil {
 		return err
 	}
 
-	// Cria o servidor mDNS e defer sua parada
+	// Create mDNS server and defer its stop
 	_, err = mdns.NewServer(&mdns.Config{Zone: service})
 	if err != nil {
 		return err

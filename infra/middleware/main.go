@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/gabrielmoura/raspController/configs"
 	"log"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // CacheMiddleware godoc
-// @description Middleware para cache de respostas
+// @description Middleware for caching responses
 func CacheMiddleware(ttl int) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if c.Method() != fiber.MethodGet {
@@ -38,6 +39,17 @@ func CacheMiddleware(ttl int) fiber.Handler {
 			log.Println("Error storing cache for", url, err)
 		}
 
-		return nil // Sucesso na escrita, ignora qualquer erro na chamada Next()
+		return nil
 	}
+}
+
+// CheckAuth godoc
+// @description Middleware for authentication
+func CheckAuth(c *fiber.Ctx) error {
+	if c.Get("Authorization") != "Bearer "+configs.Conf.AuthToken {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized",
+		})
+	}
+	return c.Next()
 }

@@ -1,4 +1,3 @@
-// Package db implementa funcionalidades para interagir com um banco de dados.
 package db
 
 import (
@@ -13,13 +12,13 @@ import (
 	"github.com/rosedblabs/rosedb/v2"
 )
 
-// DB representa o banco de dados.
+// DB represents the database
 var DB *rosedb.DB
 
 type Map map[string]interface{}
 type PinMap map[int]dto.PinMode
 
-// Initialize inicializa o banco de dados.
+// Initialize initializes the database.
 func Initialize(ctx context.Context) error {
 	options := rosedb.DefaultOptions
 	options.DirPath = configs.Conf.DBDir
@@ -37,7 +36,7 @@ func Initialize(ctx context.Context) error {
 	return nil
 }
 
-// Set insere um par chave-valor no banco de dados.
+// Set inserts a key-value pair into the database.
 func Set(name, value interface{}) error {
 	return DB.Put([]byte(name.(string)), []byte(value.(string)))
 }
@@ -46,7 +45,7 @@ func SetJson(name string, value interface{}) error {
 	return DB.Put([]byte(name), jsonValue)
 }
 
-// Get recupera o valor associado a uma chave do banco de dados.
+// Get retrieves the value associated with a database key.
 func Get(name string) (string, error) {
 	value, err := DB.Get([]byte(name))
 	if err != nil {
@@ -69,26 +68,21 @@ func GetJsonPin(name string, value *PinMap) error {
 	return json.Unmarshal(jsonValue, value)
 }
 
-// SetPin define o valor de um pino no banco de dados.
+// SetPin sets the value of a pin in the database.
 func SetPin(pin dto.PinMode) error {
 	gpios := make(PinMap)
-	// Pode ser mesclado caso o gpio_list já exista.
-	// Ou seja, se o gpio_list já existir, ele será mesclado com o novo valor.
-	// Se não existir, ele será criado.
-	// Busque o valor atual do gpio_list.
 	err := GetJsonPin("gpio_list", &gpios)
 	if err != nil {
 		// Se não existir, crie um novo.
 		log.Println("DB: gpio_list not found")
 	}
 
-	// Adicione o novo valor ao mapa.
 	gpios[pin.Pin] = pin
-	// Salve o novo valor.
+
 	return SetJson("gpio_list", gpios)
 }
 
-// GetPin obtém o valor de um pino do banco de dados.
+// GetPin gets the value of a pin from the database.
 func GetPin(pin int) (int, error) {
 	gpios := make(PinMap)
 	err := GetJsonPin("gpio_list", &gpios)

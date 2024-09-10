@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// GetAvailablePins Função para obter a lista de pinos disponíveis
+// GetAvailablePins get the list of available pins
 func GetAvailablePins() ([]string, error) {
 	if _, err := exec.LookPath("lsgpio"); err != nil {
 		return nil, errors.New("pinctrl command not found")
@@ -16,13 +16,13 @@ func GetAvailablePins() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Convertendo a saída em uma lista de pinos
+	// Converting the output to a list of pins
 	pins := strings.Fields(string(output))
 	return pins, nil
 
 }
 
-// GetPinState Função para obter o estado de um pino específico
+// GetPinState get the state of a pin
 func GetPinState(pin string) (string, error) {
 	if _, err := exec.LookPath("lsgpio"); err != nil {
 		return "", errors.New("pinctrl command not found")
@@ -31,7 +31,7 @@ func GetPinState(pin string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// Convertendo a saída em uma string
+	// Converting the output to a string
 	state := strings.TrimSpace(string(output))
 	return state, nil
 }

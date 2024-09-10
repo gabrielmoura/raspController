@@ -7,14 +7,13 @@ import (
 )
 
 type Cfg struct {
-	JwtExpiresIn int    `mapstructure:"JWT_EXPIRES_IN"`
-	JWTSecret    string `mapstructure:"JWT_SECRET" validate:"required"`
-	AppName      string `mapstructure:"APP_NAME"`
-	DBDir        string `mapstructure:"DB_DIR"`
-	Port         int    `mapstructure:"PORT"`
-	ShareDir     string `mapstructure:"SHARE_DIR"`
-	TimeFormat   string `mapstructure:"TIME_FORMAT"`
-	TimeZone     string `mapstructure:"TIME_ZONE"`
+	AuthToken  string `mapstructure:"AUTH_TOKEN" validate:"required"`
+	AppName    string `mapstructure:"APP_NAME"`
+	DBDir      string `mapstructure:"DB_DIR"`
+	Port       int    `mapstructure:"PORT"`
+	ShareDir   string `mapstructure:"SHARE_DIR"`
+	TimeFormat string `mapstructure:"TIME_FORMAT"`
+	TimeZone   string `mapstructure:"TIME_ZONE"`
 }
 
 var Conf *Cfg
@@ -23,22 +22,21 @@ func LoadConfig() error {
 	var cfg Cfg
 	vip := viper.New()
 
-	// Definindo valores padrão
+	// Setting default values
 	vip.SetDefault("PORT", 8000)
 	vip.SetDefault("DB_DIR", "/tmp/raspc")
-	vip.SetDefault("JWT_EXPIRES_IN", 3600)
 	vip.SetDefault("APP_NAME", "RaspController")
 	vip.SetDefault("TIME_FORMAT", "02-Jan-2006")
 	vip.SetDefault("TIME_ZONE", "America/Sao_Paulo")
 
-	// Lendo o arquivo de configuração conf.yml
+	// Reading the conf.yml configuration file
 	vip.SetConfigName("conf")
 	vip.SetConfigType("yml")
 	vip.AddConfigPath(".")
 	vip.AddConfigPath("/opt/raspc")
 	vip.AddConfigPath("/etc/raspc")
 
-	// Lendo as configurações do arquivo conf.yml
+	// Reading settings from the conf.yml file
 	if err := vip.ReadInConfig(); err != nil {
 		// Se o arquivo conf.yml não for encontrado, continue sem erro
 		var configFileNotFoundError viper.ConfigFileNotFoundError
@@ -48,17 +46,17 @@ func LoadConfig() error {
 	}
 	vip.AutomaticEnv()
 
-	// Se JWT_SECRET não estiver definido, retorne um erro
-	if !vip.IsSet("JWT_SECRET") {
-		return errors.New("JWT_SECRET is not set")
+	// If AUTH_TOKEN is not set, return an error
+	if !vip.IsSet("AUTH_TOKEN") {
+		return errors.New("AUTH_TOKEN is not set")
 	}
 
-	// Atribua as configurações ao cfg
+	// Assign settings to cfg
 	if err := vip.Unmarshal(&cfg); err != nil {
 		return err
 	}
 
-	// Atualiza a variável global Conf
+	// Updates the global variable Conf
 	Conf = &cfg
 
 	return nil

@@ -9,7 +9,7 @@ type PinMode struct {
 	Active    string `json:"active"`    // low or hight
 }
 
-// Constants para direção e ativação válidos.
+// Valid direction and activation constants.
 const (
 	Input  = "in"
 	Output = "out"
@@ -17,7 +17,7 @@ const (
 	High   = "high"
 )
 
-// Validation valida a estrutura PinMode.
+// Validation validates the PinMode structure.
 func (p *PinMode) Validation() error {
 	if len(p.Direction) > 0 && p.Direction != Input && p.Direction != Output {
 		return errors.New("invalid direction, use 'in' or 'out'")

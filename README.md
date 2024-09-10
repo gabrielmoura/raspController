@@ -29,10 +29,9 @@ RaspController lets you manage and monitor your Raspberry Pi remotely. Key featu
 Customize RaspController's behavior using the `conf.yml` file:
 
 ```yaml
-JWT_SECRET: "your_strong_secret_key" # Replace with a secure key 
+AUTH_TOKEN: "your_strong_secret_key" # Replace with a secure key 
 DB_DIR: "/tmp/rosedb"                # Path to store the RoseDB database
 PORT: 8080                          # Port for the web server
-JWT_EXPIRES_IN: 3600                # JWT token expiration time (seconds)
 SHARE_DIR: "/home/rasp/public"      # Directory for shared files
 ```
 

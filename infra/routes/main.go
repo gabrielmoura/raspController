@@ -51,10 +51,15 @@ func InitializeRoutes(Fiber *fiber.App) {
 	api.Get("/info/usb", getUsb)
 	api.Get("/info/cpu", middleware.CacheMiddleware(5), getCpu)
 	api.Get("/info/gpio", getGpioList)
+
 	api.Get("/gpio", getGpio)
 	api.Get("/gpio/all", middleware.CacheMiddleware(1), getGpioAll)
 	api.Patch("/gpio/:pin", updateGpio)
 
 	api.Get("/share", getShare)
 	api.Get("/share/*", getShareFile)
+	api.Delete("/share/*", middleware.CheckAuth, deleteShareFile)
+
+	api.Delete("/ps/:pid", middleware.CheckAuth, killProcess)
+	api.Get("/ps/:pid", getProcessByPid)
 }
